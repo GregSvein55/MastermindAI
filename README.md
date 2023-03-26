@@ -1,3 +1,5 @@
 # MastermindAI
 
-This is a project for ENSE 480 in which I am making a system to solve secret codes in the game mastermind
+This is my Mastermind AI game/solver that uses a gentetic algorithm to guess the secret code.
+
+Play it here: https://gregsvein55.github.io/MastermindAI/src/index.html
