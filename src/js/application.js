@@ -3,8 +3,8 @@ NUM_FIELDS = 4;
 
 SYMBOLS = ["A", "B", "C", "D", "E", "F"];
 
-MUTATION_PROBABILITY	= 0.2; // 0.6
-PERMUTATION_PROBABILITY	= 0.1; // 0.4
+MUTATION_PROBABILITY	= 0.2;
+PERMUTATION_PROBABILITY	= 0.1; 
 INVERSION_PROBABILITY	= 0.05;
 
 MAXGEN = 250;
@@ -279,7 +279,7 @@ function startNewGame() {
 	cleanUpPlayground();
 	if(gameMode != GAME_MODE_1) {
 		diplayGuess(aiGuess);
-		// $(".go-btn-5").hide();
+	
 		if (gameMode == GAME_MODE_2) {
 			alert("Pick a secret code and remember it. The AI has to guess your code.",
 			 		"Make sure to give the correct response to the AI's guess.");
@@ -324,7 +324,7 @@ function cleanUpPlayground() {
 	$(".test-col")
 		.removeClass('red-peg')
 		.removeClass('yellow-peg');
-	$(".loader-col img").hide();
+	$(".thinking-col img").hide();
 	clearSolutionBoxes();
 }
 
@@ -340,17 +340,17 @@ function playNextGuess(blackNum, whiteNum) {
 		return; 
 	}
  	eligibleSet = [];
- 	var genNum = 0;
+
  	population.generation(previousGuesses, eligibleSet, MAXGEN, function() {
 		if(eligibleSet.length > 0) {
 			aiGuess = chooseNextGuess(eligibleSet);
 			diplayGuess(aiGuess);
-			$("#loader-" + (previousGuesses.length-1)).hide();
+			$("#thinking-" + (previousGuesses.length-1)).hide();
 			$(".go-btn-" + previousGuesses.length).removeClass("disabled");
 		} else {
 			alert("Lose!");
 		}
-		$("#loader").hide();
+		$("#thinking").hide();
  	});
 }
 
@@ -407,7 +407,7 @@ $("[class*='go-btn']").click(function() {
 	if(gameMode != GAME_MODE_1) {
 		var response = countTestResponse();
 		$(this).hide();
-		$("#loader-" + previousGuesses.length).show();
+		$("#thinking-" + previousGuesses.length).show();
 		playNextGuess(response.a, response.b);
 	} else {
 		if(playerCode.indexOf(0) == -1) {

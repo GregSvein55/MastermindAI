@@ -68,12 +68,12 @@ box-shadow: inset 0px 0px 2px 0px #444;
 	transition: opacity 0.2s ease;
 }
 
-.loader-col {
+.thinking-col {
 	width: 50px;
 	text-align: center;
 }
 
-[id^="loader"] {
+[id^="thinking"] {
 	display: none;
 }
 
@@ -124,7 +124,7 @@ box-shadow: inset 0px 0px 2px 0px #444;
 	border-spacing: 5px;
 	border-collapse: separate;
 	margin: auto;
-	width: 50%;
+
 }
 
 [class^="option-col"] {
