@@ -1,3 +1,10 @@
+/**
+ * @fileoverview The main js file containing the genetic algorithm
+ * 
+ * @author Greg Sveinbjornson
+ * 
+ */
+
 NUM_SYMBOLS = 6;
 NUM_FIELDS = 4;
 
@@ -16,14 +23,33 @@ FIT_B = 2;
 var allCodes = [];
 variations(SYMBOLS, NUM_FIELDS, [], allCodes);
 
+/**
+ * Checks if a random number is less than or equal to probability
+ * 
+ * @param {*} probability 
+ * @returns true if random number is less than or equal to probability
+ */
 function shouldDo(probability) {
 	return (Math.random() <= probability) ? true : false;
 }
 
+/**
+ * Gets the random value for crossover point
+ * 
+ * @param {*} length 
+ * @returns a random number between 1 and length-2
+ */
 function getCrossoverPoint(length) {
 	return Math.floor(Math.random() * (length - 2) + 1);
 }
 
+/**
+ * Checks how often shouldDo returns true
+ * 
+ * @param {*} probability 
+ * @param {*} toRepeat 
+ * @returns ratio of true to false of shouldDo returns
+ */
 function check(probability, toRepeat) {
 	var total = toRepeat;
 	var count = 0;
@@ -33,12 +59,25 @@ function check(probability, toRepeat) {
 	return (count / toRepeat).toFixed(2);
 }
 
+/**
+ * Constructor for a combination
+ * 
+ * @param {*} code 
+ */
 function Combination(code) {
 	this.code = _.isString(code) ? code.split('') : code;
 	this.fitness = 0;
 	this.eligible = false;
 }
 
+/**
+ * Takes another Combination instance as input 
+ * and performs a crossover operation between the 
+ * two codes at a randomly chosen crossover point.
+ * 
+ * @param {*} other 
+ * @returns array of two new combinations created by crossover
+ */
 Combination.prototype.crossover = function(other) {
 	var crossoverPoint = getCrossoverPoint(this.code.length);
 	var firstChild = this.code.slice(0, crossoverPoint).concat(other.code.slice(crossoverPoint));
@@ -46,12 +85,20 @@ Combination.prototype.crossover = function(other) {
 	return [new Combination(firstChild), new Combination(secondChild)];
 };
 
+/**
+ * Mutates a random symbol in the code 
+ * by replacing it with another randomly 
+ * chosen symbol from the symbol set
+ */
 Combination.prototype.mutate = function() {
 	var position = Math.floor(Math.random() * NUM_FIELDS);
 	var newValue = _.sample(_.without(SYMBOLS, this.code[position]));
 	this.code[position] = newValue;
 };
 
+/**
+ * Swaps two random symbols in the code
+ */
 Combination.prototype.permutate = function() {
 	var positions = _.range(NUM_FIELDS);
 	var toPermute = _.sample(positions, 2);
@@ -61,14 +108,30 @@ Combination.prototype.permutate = function() {
 	][0];
 }
 
+/**
+ * Reverses the order of the symbols in the code
+ */
 Combination.prototype.inverse = function () {
 	this.code.reverse();
 }
 
+/**
+ * Swaps the positions of two randomly chosen symbols in the code
+ */
 Combination.prototype.getCodeString = function() {
 	return this.code.join('');
 };
 
+/**
+ * Calculates the fitness of the code based on the:
+ * 1. Number of correct symbols and positions (represented by variable xDifference), 
+ * 2. Number of correct symbols but incorrect positions (represented by variable yDifference), 
+ * 3. The index of the guess in the previous guesses array (represented by variable slickValue).
+ * 
+ * If the code is an exact match for the solution, sets the eligible property to true.
+ * 
+ * @param {*} prevGuesses 
+ */
 Combination.prototype.calculateFitness = function(prevGuesses) {
 	var xDifference = 0;
 	var yDifference = 0;
@@ -85,6 +148,15 @@ Combination.prototype.calculateFitness = function(prevGuesses) {
 	this.fitness = FIT_A * xDifference + yDifference + FIT_B * NUM_FIELDS * slickValue;
 };
 
+/**
+ * Generates all possible combinations of the symbols up to 
+ * the given depth and stores them in the results array
+ * 
+ * @param {*} symbols 
+ * @param {*} depth 
+ * @param {*} variation 
+ * @param {*} results 
+ */
 function variations(symbols, depth, variation, results) {
 	if(depth > 0) {
 		for(var i = 0; i<symbols.length; i++) {
@@ -97,19 +169,41 @@ function variations(symbols, depth, variation, results) {
 	}
 }
 
+/**
+ * Constructor for the Mastermind game instance
+ */
 function Mastermind() {
 	this.solution = [];
 	this.newGame();
 }
+
+/**
+ * Generates a new random code for the solution
+ */
 Mastermind.prototype.newGame = function() {
 	for(var i=0; i<NUM_FIELDS; i++) {
 		this.solution[i] = SYMBOLS[Math.floor(Math.random() * NUM_SYMBOLS)];
 	}
 };
+
+/**
+ * Takes a combination input and returns the number of correct colours and positions
+ * compared to the solution of that round
+ * 
+ * @param {*} combination 
+ * @returns number of correct symbols and positions, number of correct symbols but incorrect positions
+ */
 Mastermind.prototype.testCombination = function(combination) {
 	return testCode(combination, this.solution);
 }
 
+/**
+ * Takes a combination and solution input compares them
+ * 
+ * @param {*} combination 
+ * @param {*} solution 
+ * @returns number of correct symbols and positions, number of correct symbols but incorrect positions
+ */
 var testCode = function(combination, solution) {
 	var a = 0;
 	var b = 0;
@@ -134,24 +228,47 @@ var testCode = function(combination, solution) {
 	return [a, b];
 }
 
+/**
+ * Constructor for the population of combinations
+ * 
+ * @param {*} size 
+ */
 function Population(size) {
 	this.members = [];
 	this.size = size;
 	this.init();
 }
 
+/**
+ * Generates a random sample of the possible combinations
+ */
 Population.prototype.init = function() {
 	this.members = [];
 	var randomSample = _.sample(allCodes, this.size);
 	for(var i in randomSample) this.members.push(new Combination(randomSample[i]));
 };
 
+/**
+ * Sorts the population by acsending order of fitness
+ */
 Population.prototype.sort = function() {
     this.members.sort(function(a, b) {
         return a.fitness - b.fitness;
     });
 }
 
+/**
+ * Performs a single generation of the genetic algorithm
+ * by calculating the fitness of each combination, sorting
+ * the population, and then performing crossover,mutation and
+ * inversion on them.
+ * 
+ * @param {*} prevGuesses 
+ * @param {*} eiSet 
+ * @param {*} maxGen 
+ * @param {*} callback 
+ * @returns a new combination
+ */
 Population.prototype.generation = function(prevGuesses, eiSet, maxGen, callback) {
 	if(maxGen <= 0 || eiSet.length == SET_SIZE) {
 		if(!(prevGuesses.length > 1 && eiSet.length < 1)) {
@@ -190,6 +307,12 @@ Population.prototype.generation = function(prevGuesses, eiSet, maxGen, callback)
 	}, 5);
 };
 
+/**
+ * Chooses the next guess based on the fitness of the population
+ * 
+ * @param {*} eligible 
+ * @returns a code to guess
+ */
 function chooseNextGuess(eligible) {
 	var max = 0;
 	var nextGuess = eligible[0];
@@ -214,6 +337,12 @@ function chooseNextGuess(eligible) {
 	return nextGuess.split('');
 }
 
+/**
+ * Displays the pegs for the previous guess
+ * 
+ * @param {*} code 
+ * @returns true if the game is over and false otherwise
+ */
 function showPegs(code) {
     var testResponse = game.testCombination(code);
     var testTableSelector = $(".test-table-" + previousGuesses.length);
@@ -240,6 +369,11 @@ function showPegs(code) {
    	return false;
 }
 
+/**
+ * Displays the guess of the AI
+ * 
+ * @param {*} code 
+ */
 function diplayGuess(code) {
 	var rowSelector = $(".guess-row-" + previousGuesses.length);
     var i = 0;
@@ -274,6 +408,9 @@ GAME_MODE_3 = 3;
 
 startNewGame();
 
+/**
+ * Starts a new game, depending on the selected game mode
+ */
 function startNewGame() {
 	initGameVariables();
 	cleanUpPlayground();
@@ -289,6 +426,9 @@ function startNewGame() {
 	}
 }
 
+/**
+ * Initializes the game variables
+ */
 function initGameVariables() {
 	game = new Mastermind();
 	aiGuess = _.sample(allCodes);
@@ -300,6 +440,13 @@ function initGameVariables() {
 	console.log(game.solution);
 }
 
+/**
+ * Gets the number from a class attribute
+ * 
+ * @param {*} classAttr 
+ * @param {*} prefix 
+ * @returns number from the class attribute
+ */
 function getNumberFromClass(classAttr, prefix) {
 	var startIndex = classAttr.indexOf(prefix);
 	if(startIndex != -1) {
@@ -308,6 +455,9 @@ function getNumberFromClass(classAttr, prefix) {
 	return NaN;
 }
 
+/**
+ * Clears the UI
+ */
 function cleanUpPlayground() {
 	$("[class*='go-btn']")
 		.addClass('disabled')
@@ -332,6 +482,12 @@ $(".new-game").click(function() {
 	startNewGame();
 });
 
+/**
+ * Checkes if the AI has won the game, and if not, it plays the next guess
+ * 
+ * @param {*} blackNum 
+ * @param {*} whiteNum  
+ */
 function playNextGuess(blackNum, whiteNum) {
 	console.log(blackNum, whiteNum);
 	previousGuesses.push({code: aiGuess, x : blackNum, y : whiteNum});
@@ -373,6 +529,11 @@ $(".test-col").click(function() {
 	}
 });
 
+/**
+ * Checks how correct the AI's guess was
+ * 
+ * @returns the number of red and yellow pegs
+ */
 function countTestResponse() {
 	var red = 0, yellow = 0;
 	var responseSelector = $(".test-table-" + previousGuesses.length + " td");
@@ -387,6 +548,9 @@ function countTestResponse() {
 	return {a:red, b:yellow};
 }
 
+/**
+ * Displays the correct code
+ */
 function displayGameSolution() {
 	for(var i in game.solution) {
 		var fieldSelect = $(".secret-block-" + i);
@@ -396,6 +560,9 @@ function displayGameSolution() {
 	}
 }
 
+/**
+ * Clears the solution boxes
+ */
 function clearSolutionBoxes() {
 	$("[class*='secret-block']").each(function() {
 		var newClass = $(this).attr('class').split(' ').slice(0,2).join(' ') + " secret-sym";
