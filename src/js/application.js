@@ -554,9 +554,20 @@ function countTestResponse() {
 function displayGameSolution() {
 	for(var i in game.solution) {
 		var fieldSelect = $(".secret-block-" + i);
-		fieldSelect
-			.removeClass('secret-sym')
-			.addClass('sym-' + game.solution[i]);
+		
+		if (game.solution[i] == playerCode[i] || gameMode == GAME_MODE_3) {
+			fieldSelect
+				.removeClass('secret-sym')
+				.removeClass('secret-block-lose')
+				.addClass('secret-block-win')
+				.addClass('sym-' + game.solution[i]);
+		} else {
+			fieldSelect
+				.removeClass('secret-sym')
+				.removeClass('secret-block-win')
+				.addClass('secret-block-lose')
+				.addClass('sym-' + game.solution[i]);
+		}
 	}
 }
 

@@ -174,12 +174,20 @@ box-shadow: inset 0px 0px 2px 0px #444;
 }
 
 [class*="secret-block"] {
-	background-color: #eef600;
 	box-shadow: none;
 	border: 2px solid #000000;
 	background-repeat: no-repeat;
 	background-position: 50% 50%;
 }
+
+.secret-block-win {
+	background-color: #eef600; /* background color when the guesser wins */
+}
+
+.secret-block-lose {
+	background-color: #ff0000; /* background color when the guesser loses */
+}
+
 
 .choose-game{
 	color: blanchedalmond;
